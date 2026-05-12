@@ -666,6 +666,7 @@
 </header>
 
 <main>
+  <!-- ── SCREEN: CONVERT ── -->
   <div class="screen active" id="screen-convert">
 
     <div class="install-banner" id="installBanner">
@@ -676,6 +677,7 @@
       <button class="install-btn" id="installBtn">Instalar</button>
     </div>
 
+    <!-- Format selector row -->
     <div style="margin-bottom:20px">
       <div class="section-label">Conversión</div>
       <div class="format-row">
@@ -694,6 +696,7 @@
       </div>
     </div>
 
+    <!-- Dropzone -->
     <div class="dropzone" id="dropzone">
       <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt,.epub">
       <div class="drop-default">
@@ -711,6 +714,7 @@
       </div>
     </div>
 
+    <!-- Progress -->
     <div class="progress-wrap" id="progressWrap">
       <div class="progress-label">
         <span id="progressLabel">Procesando…</span>
@@ -719,6 +723,7 @@
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
     </div>
 
+    <!-- Result -->
     <div class="result-card" id="resultCard">
       <div class="result-top">
         <span class="result-icon" id="resultIcon">✅</span>
@@ -731,11 +736,13 @@
       </div>
     </div>
 
+    <!-- Convert button -->
     <button class="convert-btn" id="convertBtn" disabled>
       <div class="btn-spinner"></div>
       <span class="btn-text">Selecciona un archivo</span>
     </button>
 
+    <!-- History -->
     <div id="historySection" class="history-section" style="display:none">
       <div class="section-label">Recientes</div>
       <div id="historyList"></div>
@@ -743,6 +750,7 @@
 
   </div>
 
+  <!-- ── SCREEN: INFO ── -->
   <div class="screen" id="screen-info">
     <div class="info-card">
       <div class="info-title">📊 Formatos soportados</div>
@@ -811,6 +819,7 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- ── LIBS ── -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -1015,7 +1024,7 @@ async function convertFile(file, from, to) {
   if (from === 'txt' && to === 'epub') {
     const text = await readText(file);
     setProgress(50, 'Generando EPUB…');
-    const blob = textToEpub(text, baseName);
+    const blob = await textToEpub(text, baseName);
     setProgress(100);
     return { blob, name: baseName + '.epub', from, to };
   }
@@ -1031,7 +1040,7 @@ async function convertFile(file, from, to) {
   if ((from === 'docx' || from === 'doc') && to === 'epub') {
     const html = await docxToHtml(file);
     setProgress(60, 'Generando EPUB…');
-    const blob = htmlToEpub(html, baseName);
+    const blob = await htmlToEpub(html, baseName);
     setProgress(100);
     return { blob, name: baseName + '.epub', from, to };
   }
@@ -1056,7 +1065,7 @@ async function convertFile(file, from, to) {
   if (from === 'pdf' && to === 'epub') {
     const text = await pdfToText(file);
     setProgress(70, 'Generando EPUB…');
-    const blob = textToEpub(text, baseName);
+    const blob = await textToEpub(text, baseName);
     setProgress(100);
     return { blob, name: baseName + '.epub', from, to };
   }
@@ -1183,7 +1192,7 @@ function splitIntoChapters(text) {
   return chunks.length ? chunks : [text];
 }
 
-function buildEpub(title, chapters) {
+async function buildEpub(title, chapters) {
   const zip = new JSZip();
   const uid = 'docconvert-' + Date.now();
 
@@ -1268,7 +1277,7 @@ h2 { font-size: 1.2em; border-bottom: 1px solid #ccc; padding-bottom: 0.3em; mar
   </navMap>
 </ncx>`);
 
-  const content = zip.generate({ type: 'blob', mimeType: 'application/epub+zip' });
+  const content = await zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' });
   return content;
 }
 
@@ -1407,5 +1416,3 @@ renderHistory();
 </script>
 </body>
 </html>
-
-```
